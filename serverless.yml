@@ -7,7 +7,12 @@ provider:
     role:
       statements:
         - Effect: Allow
-          Action: 'dynamodb:*'
+          Action:
+            - dynamodb:Query
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
           Resource: arn:aws:dynamodb:us-east-1:*:table/usersTable
         - Effect: Allow
           Action: 's3:*'
@@ -39,6 +44,7 @@ custom:
     # noStart: true
 
 functions:
+#Get users#
   get-users:
     handler: get-user/handler.users
     package:
@@ -52,6 +58,7 @@ functions:
             parameters:
               paths:
                 id: true
+#Post users#
   post-users:
     handler: create-user/handler.create_users
     package:
@@ -64,6 +71,7 @@ functions:
           request:
             schemas:
               application/json: ${file(schemas/user-schema.json)}
+#Update users#
   update-users:
     handler: update-user/handler.update_users
     package:
@@ -79,6 +87,7 @@ functions:
                 id: true
             schemas:
               application/json: ${file(schemas/user-schema.json)}
+#Delete users#
   delete-users:
     handler: delete-user/handler.delete_users
     runtime: python3.9
@@ -93,6 +102,7 @@ functions:
             parameters:
               paths:
                 id: true
+#signeURL users#
   signeURL:
     handler: signedurl/handler.signedS3URL
     package:
@@ -106,12 +116,14 @@ functions:
             parameters:
               querystrings:
                 filename: true
+#thumbGenerator users#
   thumbGenerator:
     handler: thumbnail/handler.thumbnailGenerator
+    layers:
+      - { Ref: BaseLambdaLayer }
     package:
       patterns:
         - "thumbnail/handler.js"
-        - "node_modules/**"
     events:
       - s3:
           bucket: bucket-serverless-test01242343213
@@ -119,6 +131,16 @@ functions:
           existing: true
           rules:
             - prefix: upload/
+
+layers:
+  base:
+    name: "prd-dependencies"
+    compatibleRuntimes:
+      - "nodejs14.x"
+    package: 
+      artifact: nodejs.zip
+
+
 resources:
   Resources:
     usersTable:
