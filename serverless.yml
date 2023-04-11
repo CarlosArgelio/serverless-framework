@@ -8,7 +8,13 @@ provider:
       statements:
         - Effect: Allow
           Action: 'dynamodb:*'
-          Resource: 'arn:aws:dynamodb:us-east-1:*:table/usersTable'
+          Resource: arn:aws:dynamodb:us-east-1:*:table/usersTable
+        - Effect: Allow
+          Action: 's3:*'
+          Resource: arn:aws:s3:::bucket-serverless-test01242343213/*
+      
+  environment:
+    BUCKET: bucket-serverless-test01242343213
 
 plugins:
   - serverless-offline
@@ -87,6 +93,19 @@ functions:
             parameters:
               paths:
                 id: true
+  signeURL:
+    handler: signedurl/handler.signedS3URL
+    package:
+      patterns:
+        - "signedurl/handler.js"
+    events:
+      - http:
+          path: signedurl
+          method: get
+          request:
+            parameters:
+              querystrings:
+                filename: true
 
 resources:
   Resources:
@@ -113,7 +132,7 @@ resources:
       Properties:
         Bucket: !Ref S3Bucket
         PolicyDocument:
-          Version: 2012-10-17
+          Version: "2012-10-17"
           Statement:
             - Action:
                 - 's3:GetObject'
