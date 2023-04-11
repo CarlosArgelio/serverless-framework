@@ -3,6 +3,9 @@ service: my-service-api-app
 provider:
   name: aws
   runtime: nodejs14.x
+  apiGateway:
+    apiKeys:
+      - my-service-api-app-apikey
   iam:
     role:
       statements:
@@ -52,6 +55,7 @@ functions:
         - "get-user/handler.js"
     events:
       - http:
+          private: true
           path: users/{id}
           method: get
           request:
