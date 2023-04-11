@@ -16,9 +16,9 @@ provider:
   environment:
     BUCKET: bucket-serverless-test01242343213
 
-plugins:
-  - serverless-offline
-  - serverless-dynamodb-local
+# plugins:
+#   - serverless-offline
+#   - serverless-dynamodb-local
 
 package:
   individually: True
@@ -106,7 +106,19 @@ functions:
             parameters:
               querystrings:
                 filename: true
-
+  thumbGenerator:
+    handler: thumbnail/handler.thumbnailGenerator
+    package:
+      patterns:
+        - "thumbnail/handler.js"
+        - "node_modules/**"
+    events:
+      - s3:
+          bucket: bucket-serverless-test01242343213
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - prefix: upload/
 resources:
   Resources:
     usersTable:
