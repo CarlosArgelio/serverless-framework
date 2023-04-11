@@ -42,6 +42,10 @@ functions:
       - http:
           path: users/{id}
           method: get
+          request:
+            parameters:
+              paths:
+                id: true
   post-users:
     handler: create-user/handler.create_users
     package:
@@ -51,6 +55,9 @@ functions:
       - http:
           path: users
           method: post
+          request:
+            schemas:
+              application/json: ${file(schemas/user-schema.json)}
   update-users:
     handler: update-user/handler.update_users
     package:
@@ -60,6 +67,12 @@ functions:
       - http:
           path: users/{id}
           method: put
+          request:
+            parameters:
+              paths:
+                id: true
+            schemas:
+              application/json: ${file(schemas/user-schema.json)}
   delete-users:
     handler: delete-user/handler.delete_users
     runtime: python3.9
@@ -70,6 +83,10 @@ functions:
       - http:
           path: users/{id}
           method: delete
+          request:
+            parameters:
+              paths:
+                id: true
 
 resources:
   Resources:
