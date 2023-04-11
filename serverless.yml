@@ -1,0 +1,88 @@
+service: my-service-api-app
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 'dynamodb:*'
+          Resource: 'arn:aws:dynamodb:us-east-1:*:table/usersTable'
+
+plugins:
+  - serverless-offline
+  - serverless-dynamodb-local
+
+package:
+  individually: True
+  patterns:
+    - "!*/**"
+    - "!**"
+
+custom:
+  dynamodb:
+  # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    # Uncomment only if you already have a DynamoDB running locally
+    # noStart: true
+
+functions:
+  get-users:
+    handler: get-user/handler.users
+    package:
+      patterns:
+        - "get-user/handler.js"
+    events:
+      - http:
+          path: users/{id}
+          method: get
+  post-users:
+    handler: create-user/handler.create_users
+    package:
+      patterns:
+        - "create-user/handler.js"
+    events:
+      - http:
+          path: users
+          method: post
+  update-users:
+    handler: update-user/handler.update_users
+    package:
+      patterns:
+        - "update-user/handler.js"
+    events:
+      - http:
+          path: users/{id}
+          method: put
+  delete-users:
+    handler: delete-user/handler.delete_users
+    runtime: python3.9
+    package:
+      patterns:
+        - "delete-user/handler.py"
+    events:
+      - http:
+          path: users/{id}
+          method: delete
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: usersTable
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
