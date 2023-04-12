@@ -23,6 +23,7 @@ provider:
       
   environment:
     BUCKET: bucket-serverless-test01242343213
+    SECRET_EGG: ${ssm:/SECRET_EGG}
 
 # plugins:
 #   - serverless-offline
@@ -47,6 +48,12 @@ custom:
     # noStart: true
 
 functions:
+#Authorizer#
+  custom-authorizer:
+    handler: authorizer/handler.authorize
+    package:
+      patterns:
+        - "authorizer/handler.js"
 #Get users#
   get-users:
     handler: get-user/handler.users
@@ -71,6 +78,9 @@ functions:
     events:
       - http:
           path: users
+          authorizer: 
+            name: custom-authorizer
+            resultTtlInSeconds: 15
           method: post
           request:
             schemas:
